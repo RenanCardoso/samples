@@ -1,0 +1,48 @@
+name: Run Maestro Tests
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  maestro-tests:
+    runs-on: ubuntu-latest
+
+    steps:
+      # Passo 1: Checkout do código
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      # Passo 2: Configuração do Java (necessário para o Maestro Test)
+      - name: Set up Java
+        uses: actions/setup-java@v3
+        with:
+          distribution: 'temurin'
+          java-version: '11'
+
+      # Passo 3: Instalar dependências do Maestro
+      - name: Install Maestro
+        run: |
+          curl -Ls "https://get.maestro.mobile.dev" | bash
+          echo "export PATH=\$PATH:$HOME/.maestro/bin" >> $GITHUB_ENV
+          source $GITHUB_ENV
+
+      # Passo 4: Instalar dependências do projeto (se aplicável)
+      - name: Install project dependencies
+        run: |
+          # Exemplo: Instalar pacotes se estiver usando npm, yarn ou outro gerenciador
+          npm install || true
+
+      # Passo 5: Configuração do ambiente para o Maestro
+      - name: Set up Maestro environment
+        run: |
+          maestro --version
+
+      # Passo 6: Executar testes do Maestro
+      - name: Run Maestro tests
+        run: |
+          maestro test --app .maestro/app-release.apk --tests .maestro/android.yaml
